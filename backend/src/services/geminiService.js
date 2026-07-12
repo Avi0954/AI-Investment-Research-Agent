@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import axios from 'axios';
 import { getInvestmentPrompt } from '../prompts/investmentPrompt.js';
 import { logger } from '../utils/logger.js';
 import { recordMetric } from '../utils/metrics.js';
@@ -17,21 +17,31 @@ export const executeGeminiAnalysis = async (researchData) => {
       throw new Error("GOOGLE_API_KEY is not set in environment variables");
     }
     
-    const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
-    
     try {
       console.log("GEMINI START");
       const response = await withRetry(async () => {
-        return await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: {
-            systemInstruction: 'You are an elite AI Investment Research Agent outputting JSON only.',
-            responseMimeType: 'application/json',
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`;
+        
+        const payload = {
+          systemInstruction: {
+            parts: [{ text: 'You are an elite AI Investment Research Agent outputting JSON only.' }]
+          },
+          contents: [
+            { parts: [{ text: prompt }] }
+          ],
+          generationConfig: {
             temperature: 0.2,
             maxOutputTokens: 2048,
+            responseMimeType: 'application/json'
           }
+        };
+
+        const res = await axios.post(url, payload, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 30000 // 30 seconds
         });
+        
+        return res.data;
       }, 'Gemini');
 
       console.log("GEMINI END");
@@ -48,10 +58,15 @@ export const executeGeminiAnalysis = async (researchData) => {
         errorMessage: null
       }));
 
-      const content = response.text;
-      if (!content) {
+      if (!response.candidates || response.candidates.length === 0) {
          throw new Error("Empty response received from Gemini");
       }
+      
+      const content = response.candidates[0].content?.parts?.[0]?.text;
+      if (!content) {
+         throw new Error("Empty text in Gemini response");
+      }
+      
       return JSON.parse(content);
     } catch (error) {
       console.log("GEMINI END");
@@ -60,7 +75,7 @@ export const executeGeminiAnalysis = async (researchData) => {
       const isTimeout = error.message && (error.message.includes('timeout') || error.message.includes('ECONNABORTED'));
       recordMetric('Gemini', 'FAIL', duration, isTimeout);
       
-      const statusCode = error.status || 500;
+      const statusCode = error.response?.status || error.status || 500;
       
       console.error(JSON.stringify({
         timestamp: new Date().toISOString(),
