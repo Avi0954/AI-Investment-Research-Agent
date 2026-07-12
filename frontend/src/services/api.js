@@ -9,8 +9,7 @@ import axios from 'axios';
  * - Map the exact backend JSON into frontend-ready properties securely.
  * - Standardize error handling and HTTP status parsing.
  */
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -24,7 +23,7 @@ const apiClient = axios.create({
 export const analyzeCompanyApi = async (companyName, abortSignal) => {
   try {
     // Pass the AbortController signal to allow request cancellation
-    const response = await apiClient.post('/analyze', { company: companyName }, { signal: abortSignal });
+    const response = await apiClient.post('/api/v1/analyze', { company: companyName }, { signal: abortSignal });
     
     // Normalize data strictly to prevent UI crashes if backend returns nulls
     const { data } = response.data;

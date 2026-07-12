@@ -3,12 +3,7 @@ import { MESSAGES } from '../constants/messages.js';
 import { errorResponse } from '../utils/responseHandler.js';
 
 export const notFoundHandler = (req, res, next) => {
-  return errorResponse(
-    res,
-    HTTP_STATUS.NOT_FOUND,
-    ERROR_CODES.NOT_FOUND,
-    MESSAGES.ROUTE_NOT_FOUND
-  );
+  return res.status(404).json({ error: "Route not found" });
 };
 
 export const globalErrorHandler = (err, req, res, next) => {

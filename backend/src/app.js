@@ -66,6 +66,12 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(requestLogger);
 
 // Step 12: Health Check Endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'AI Investment Research API running'
+  });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
