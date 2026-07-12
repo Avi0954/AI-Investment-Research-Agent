@@ -15,10 +15,10 @@ import { recommendationNode } from './nodes/recommendationNode.js';
  * recommend without analysis.
  */
 const builder = new StateGraph(GraphState)
-  .addNode("researchNode", researchNode, { retryPolicy: { maxRetries: 1 } })
-  .addNode("scoringNode", scoringNode, { retryPolicy: { maxRetries: 1 } })
-  .addNode("analysisNode", analysisNode, { retryPolicy: { maxRetries: 1 } })
-  .addNode("recommendationNode", recommendationNode, { retryPolicy: { maxRetries: 1 } })
+  .addNode("researchNode", researchNode)
+  .addNode("scoringNode", scoringNode)
+  .addNode("analysisNode", analysisNode)
+  .addNode("recommendationNode", recommendationNode)
   .addEdge(START, "researchNode")
   .addEdge("researchNode", "scoringNode")
   .addEdge("scoringNode", "analysisNode")

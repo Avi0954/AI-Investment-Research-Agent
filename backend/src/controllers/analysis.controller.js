@@ -47,10 +47,13 @@ export const analyzeCompany = async (req, res, next) => {
       }
     }
     
-    // Call the LangGraph workflow with a safety timeout (55 seconds to beat Vercel's 60s kill)
+    // Add log: ANALYZE START
+    console.log("ANALYZE START");
+    
+    // Call the LangGraph workflow with a safety timeout (60 seconds)
     let timeoutId;
     const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error('Request timed out')), 55000);
+      timeoutId = setTimeout(() => reject(new Error('Request timed out after 60 seconds')), 60000);
     });
 
     try {
@@ -59,7 +62,11 @@ export const analyzeCompany = async (req, res, next) => {
         timeoutPromise
       ]);
       clearTimeout(timeoutId);
-      return successResponse(res, HTTP_STATUS.OK, analysisResult, MESSAGES.ANALYSIS_SUCCESS);
+      return res.status(200).json({
+        success: true,
+        message: MESSAGES.ANALYSIS_SUCCESS,
+        data: analysisResult
+      });
     } catch (error) {
       clearTimeout(timeoutId);
       throw error;

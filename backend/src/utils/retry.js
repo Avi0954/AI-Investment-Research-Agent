@@ -4,7 +4,8 @@ const isTransientError = (error) => {
   if (error.name === 'TimeoutError') return true;
   if (!error.status && !error.response) return true; // Network errors
   const status = error.status || error.response?.status;
-  return [429, 500, 502, 503, 504].includes(status);
+  // Exclude 429 from transient errors so we fail-fast on strict rate limits.
+  return [500, 502, 503, 504].includes(status);
 };
 
 export const withRetry = async (fn, providerName, maxRetries = 3) => {

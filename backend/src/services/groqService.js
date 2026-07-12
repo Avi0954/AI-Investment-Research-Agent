@@ -12,7 +12,7 @@ export const executeGroqAnalysis = async (researchData) => {
     const prompt = getInvestmentPrompt(researchData);
     const start = Date.now();
     try {
-      console.log("Groq request started");
+      console.log("GROQ START");
       const response = await withRetry(async () => {
         return await axios.post(
           'https://api.groq.com/openai/v1/chat/completions',
@@ -36,7 +36,7 @@ export const executeGroqAnalysis = async (researchData) => {
         );
       }, 'Groq');
 
-      console.log("Groq response received");
+      console.log("GROQ END");
       const duration = Date.now() - start;
       recordMetric('Groq', 'SUCCESS', duration);
       
@@ -53,21 +53,47 @@ export const executeGroqAnalysis = async (researchData) => {
       const content = response.data.choices[0].message.content;
       return JSON.parse(content);
     } catch (error) {
+      console.log("GROQ END");
       const duration = Date.now() - start;
       const isTimeout = error.code === 'ECONNABORTED' || error.name === 'TimeoutError';
       recordMetric('Groq', 'FAIL', duration, isTimeout);
+      
+      const statusCode = error.response?.status || 500;
       
       console.error(JSON.stringify({
         timestamp: new Date().toISOString(),
         endpoint: '/chat/completions',
         model: 'llama-3.1-8b-instant',
         tokens: null,
-        statusCode: error.response?.status || 500,
+        statusCode: statusCode,
         errorMessage: error.message
       }));
       
       logger.error('Groq', `LLM Analysis Failed: ${error.message}`);
-      throw error;
+      
+      // Handle Groq 429 or other API errors gracefully inside the node
+      if (statusCode === 429 || error.message.includes('429')) {
+        return {
+          recommendation: { decision: "ERROR", confidence: 0 },
+          summary: "AI service is currently experiencing high demand (Rate Limit). Please try again later.",
+          reasoning: "Groq API returned HTTP 429 Too Many Requests."
+        };
+      }
+      
+      if (isTimeout || error.message.includes('time')) {
+        return {
+          recommendation: { decision: "ERROR", confidence: 0 },
+          summary: "AI service timed out while generating the analysis.",
+          reasoning: "Groq API took too long to respond."
+        };
+      }
+      
+      // For any other unexpected errors, return a structured fallback
+      return {
+          recommendation: { decision: "ERROR", confidence: 0 },
+          summary: "AI service encountered an unexpected error.",
+          reasoning: error.message
+      };
     }
   };
 

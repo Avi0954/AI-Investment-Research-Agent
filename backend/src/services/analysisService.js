@@ -15,8 +15,9 @@ export const runInvestmentGraph = async (company) => {
   try {
     const initialState = { company: company.trim(), status: "Started" };
     
-    // Execute the LangGraph workflow
-    const finalState = await investmentGraph.invoke(initialState);
+    // Execute the LangGraph workflow with a strict recursion limit
+    const finalState = await investmentGraph.invoke(initialState, { recursionLimit: 10 });
+    console.log("GRAPH END");
     
     const duration = Date.now() - startTime;
     console.log(`[Graph Execution]: Completed in ${duration}ms`);
