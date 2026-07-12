@@ -16,6 +16,7 @@ const Home = () => {
   };
 
   const handlePopularSearch = (company) => {
+    if (isLoading) return;
     setQuery(company);
     analyze(company);
   };

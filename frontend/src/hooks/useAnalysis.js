@@ -29,6 +29,8 @@ export const useAnalysis = () => {
   const clearToast = useCallback(() => setToast(null), []);
 
   const analyze = useCallback(async (companyName) => {
+    if (isLoading) return;
+    
     const trimmedName = companyName.trim();
     if (!trimmedName) {
       setError("Please enter a valid company name.");
@@ -73,7 +75,7 @@ export const useAnalysis = () => {
         abortControllerRef.current = null;
       }
     }
-  }, [data, error, lastQuery, showToast]);
+  }, [data, error, lastQuery, showToast, isLoading]);
 
   const retry = useCallback(() => {
     if (lastQuery) {

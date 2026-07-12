@@ -6,7 +6,7 @@ import { withRetry } from '../utils/retry.js';
 import { withCache, CACHE_TTL } from '../utils/cache.js';
 
 export const executeGroqAnalysis = async (researchData) => {
-  const companySymbol = researchData.company?.symbol || 'UNKNOWN';
+  const companySymbol = researchData.company?.symbol || researchData.companyName || 'UNKNOWN';
   
   const fetcher = async () => {
     const prompt = getInvestmentPrompt(researchData);
@@ -22,7 +22,8 @@ export const executeGroqAnalysis = async (researchData) => {
               { role: 'user', content: prompt }
             ],
             response_format: { type: "json_object" },
-            temperature: 0.1
+            temperature: 0.1,
+            max_tokens: 2048
           },
           {
             headers: {
@@ -37,12 +38,32 @@ export const executeGroqAnalysis = async (researchData) => {
       const duration = Date.now() - start;
       recordMetric('Groq', 'SUCCESS', duration);
       
+      const usage = response.data.usage || {};
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        endpoint: '/chat/completions',
+        model: 'llama-3.3-70b-versatile',
+        tokens: usage.total_tokens || 0,
+        statusCode: response.status,
+        errorMessage: null
+      }));
+
       const content = response.data.choices[0].message.content;
       return JSON.parse(content);
     } catch (error) {
       const duration = Date.now() - start;
       const isTimeout = error.code === 'ECONNABORTED' || error.name === 'TimeoutError';
       recordMetric('Groq', 'FAIL', duration, isTimeout);
+      
+      console.error(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        endpoint: '/chat/completions',
+        model: 'llama-3.3-70b-versatile',
+        tokens: null,
+        statusCode: error.response?.status || 500,
+        errorMessage: error.message
+      }));
+      
       logger.error('Groq', `LLM Analysis Failed: ${error.message}`);
       throw error;
     }
