@@ -48,16 +48,22 @@ export const analyzeCompany = async (req, res, next) => {
     }
     
     // Call the LangGraph workflow with a safety timeout (55 seconds to beat Vercel's 60s kill)
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timed out')), 55000)
-    );
+    let timeoutId;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error('Request timed out')), 55000);
+    });
 
-    const analysisResult = await Promise.race([
-      runInvestmentGraph(company),
-      timeoutPromise
-    ]);
-    
-    return successResponse(res, HTTP_STATUS.OK, analysisResult, MESSAGES.ANALYSIS_SUCCESS);
+    try {
+      const analysisResult = await Promise.race([
+        runInvestmentGraph(company),
+        timeoutPromise
+      ]);
+      clearTimeout(timeoutId);
+      return successResponse(res, HTTP_STATUS.OK, analysisResult, MESSAGES.ANALYSIS_SUCCESS);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
   } catch (error) {
     logger.error('Analyze', `Controller Error: ${error.message}`);
     
