@@ -76,6 +76,7 @@ export const executeGeminiAnalysis = async (researchData) => {
       recordMetric('Gemini', 'FAIL', duration, isTimeout);
       
       const statusCode = error.response?.status || error.status || 500;
+      const apiErrorDetail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
       
       console.error(JSON.stringify({
         timestamp: new Date().toISOString(),
@@ -83,10 +84,10 @@ export const executeGeminiAnalysis = async (researchData) => {
         model: 'gemini-1.5-flash',
         tokens: null,
         statusCode: statusCode,
-        errorMessage: error.message
+        errorMessage: apiErrorDetail
       }));
       
-      logger.error('Gemini', `LLM Analysis Failed: ${error.message}`);
+      logger.error('Gemini', `LLM Analysis Failed: ${apiErrorDetail}`);
       
       if (statusCode === 429 || (error.message && error.message.includes('429')) || (error.message && error.message.includes('quota'))) {
         throw new Error('Gemini 429: Rate limit or quota exceeded');
