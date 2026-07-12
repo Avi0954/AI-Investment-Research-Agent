@@ -20,7 +20,7 @@ export const executeGeminiAnalysis = async (researchData) => {
     try {
       console.log("GEMINI START");
       const response = await withRetry(async () => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`;
         
         const payload = {
           systemInstruction: {
@@ -31,8 +31,21 @@ export const executeGeminiAnalysis = async (researchData) => {
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 2048,
-            responseMimeType: 'application/json'
+            maxOutputTokens: 8192,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                summary: { type: "STRING" },
+                strengths: { type: "ARRAY", items: { type: "STRING" } },
+                weaknesses: { type: "ARRAY", items: { type: "STRING" } },
+                risks: { type: "ARRAY", items: { type: "STRING" } },
+                recommendation: { type: "STRING" },
+                confidence: { type: "INTEGER" },
+                reasoning: { type: "ARRAY", items: { type: "STRING" } }
+              },
+              required: ["summary", "strengths", "weaknesses", "risks", "recommendation", "confidence", "reasoning"]
+            }
           }
         };
 
@@ -52,7 +65,7 @@ export const executeGeminiAnalysis = async (researchData) => {
       console.log(JSON.stringify({
         timestamp: new Date().toISOString(),
         endpoint: 'models.generateContent',
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3.5-flash',
         tokens: usage.totalTokenCount || 0,
         statusCode: 200,
         errorMessage: null
@@ -67,7 +80,16 @@ export const executeGeminiAnalysis = async (researchData) => {
          throw new Error("Empty text in Gemini response");
       }
       
-      return JSON.parse(content);
+      let cleanContent = content.trim();
+      if (cleanContent.startsWith('```')) {
+        const firstLineBreak = cleanContent.indexOf('\n');
+        cleanContent = cleanContent.substring(firstLineBreak).trim();
+        if (cleanContent.endsWith('```')) {
+          cleanContent = cleanContent.substring(0, cleanContent.length - 3).trim();
+        }
+      }
+      
+      return JSON.parse(cleanContent);
     } catch (error) {
       console.log("GEMINI END");
       const duration = Date.now() - start;
@@ -76,18 +98,17 @@ export const executeGeminiAnalysis = async (researchData) => {
       recordMetric('Gemini', 'FAIL', duration, isTimeout);
       
       const statusCode = error.response?.status || error.status || 500;
-      const apiErrorDetail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
       
       console.error(JSON.stringify({
         timestamp: new Date().toISOString(),
         endpoint: 'models.generateContent',
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3.5-flash',
         tokens: null,
         statusCode: statusCode,
-        errorMessage: apiErrorDetail
+        errorMessage: error.message
       }));
       
-      logger.error('Gemini', `LLM Analysis Failed: ${apiErrorDetail}`);
+      logger.error('Gemini', `LLM Analysis Failed: ${error.message}`);
       
       if (statusCode === 429 || (error.message && error.message.includes('429')) || (error.message && error.message.includes('quota'))) {
         throw new Error('Gemini 429: Rate limit or quota exceeded');
