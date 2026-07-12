@@ -10,11 +10,11 @@ const isTransientError = (error) => {
 export const withRetry = async (fn, providerName, maxRetries = 3) => {
   let attempt = 0;
   
-  // Custom delays: 2s, 5s, 10s
+  // Custom delays: 3s, 7s, 15s
   const getDelay = (attempt) => {
-    if (attempt === 1) return 2000;
-    if (attempt === 2) return 5000;
-    return 10000;
+    if (attempt === 1) return 3000;
+    if (attempt === 2) return 7000;
+    return 15000;
   };
 
   while (attempt <= maxRetries) {

@@ -47,11 +47,40 @@ export const analyzeCompany = async (req, res, next) => {
       }
     }
     
-    // Call the LangGraph workflow
-    const analysisResult = await runInvestmentGraph(company);
+    // Call the LangGraph workflow with a safety timeout (55 seconds to beat Vercel's 60s kill)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timed out')), 55000)
+    );
+
+    const analysisResult = await Promise.race([
+      runInvestmentGraph(company),
+      timeoutPromise
+    ]);
     
     return successResponse(res, HTTP_STATUS.OK, analysisResult, MESSAGES.ANALYSIS_SUCCESS);
   } catch (error) {
-    next(error);
+    logger.error('Analyze', `Controller Error: ${error.message}`);
+    
+    if (error.message && error.message.includes('429')) {
+      return res.status(429).json({
+        success: false,
+        error: "AI service unavailable",
+        details: "Groq rate limit reached"
+      });
+    }
+
+    if (error.message && error.message.includes('timed out')) {
+      return res.status(504).json({
+        success: false,
+        error: "Request Timeout",
+        details: "The analysis took too long to complete."
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: "AI service unavailable",
+      details: error.message || "An unexpected error occurred."
+    });
   }
 };

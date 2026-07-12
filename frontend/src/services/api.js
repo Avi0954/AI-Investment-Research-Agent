@@ -118,6 +118,7 @@ export const analyzeCompanyApi = async (companyName, abortSignal) => {
       if (status === 400) throw new Error(serverMessage || "Invalid company name provided.");
       if (status === 404) throw new Error(serverMessage || "Company not found. Please try another name.");
       if (status === 429) throw new Error("Too many requests. Please slow down and try again later.");
+      if (status === 504) throw new Error("The analysis timed out. The request took too long.");
       if (status === 500) throw new Error(serverMessage || "The AI analysis failed. Please try again.");
       
       throw new Error(serverMessage || "An unexpected server error occurred.");
