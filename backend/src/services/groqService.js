@@ -71,29 +71,15 @@ export const executeGroqAnalysis = async (researchData) => {
       
       logger.error('Groq', `LLM Analysis Failed: ${error.message}`);
       
-      // Handle Groq 429 or other API errors gracefully inside the node
       if (statusCode === 429 || error.message.includes('429')) {
-        return {
-          recommendation: { decision: "ERROR", confidence: 0 },
-          summary: "AI service is currently experiencing high demand (Rate Limit). Please try again later.",
-          reasoning: "Groq API returned HTTP 429 Too Many Requests."
-        };
+        throw new Error('Groq 429: Rate limit exceeded');
       }
-      
+
       if (isTimeout || error.message.includes('time')) {
-        return {
-          recommendation: { decision: "ERROR", confidence: 0 },
-          summary: "AI service timed out while generating the analysis.",
-          reasoning: "Groq API took too long to respond."
-        };
+        throw new Error('Groq Timeout: AI request timed out');
       }
-      
-      // For any other unexpected errors, return a structured fallback
-      return {
-          recommendation: { decision: "ERROR", confidence: 0 },
-          summary: "AI service encountered an unexpected error.",
-          reasoning: error.message
-      };
+
+      throw error;
     }
   };
 

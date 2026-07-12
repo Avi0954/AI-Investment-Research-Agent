@@ -72,28 +72,28 @@ export const analyzeCompany = async (req, res, next) => {
       throw error;
     }
   } catch (error) {
-    logger.error('Analyze', `Controller Error: ${error.message}`);
+    console.error(`Controller Error: ${error.message}`);
     
     if (error.message && error.message.includes('429')) {
       return res.status(429).json({
         success: false,
-        error: "AI service unavailable",
-        details: "Groq rate limit reached"
+        code: "GROQ_RATE_LIMIT",
+        message: "Groq is temporarily rate limiting requests. Please try again in a few minutes."
       });
     }
 
-    if (error.message && error.message.includes('timed out')) {
+    if (error.message && (error.message.includes('timed out') || error.message.includes('AI_TIMEOUT'))) {
       return res.status(504).json({
         success: false,
-        error: "Request Timeout",
-        details: "The analysis took too long to complete."
+        code: "AI_TIMEOUT",
+        message: "AI request timed out."
       });
     }
 
     return res.status(500).json({
       success: false,
-      error: "AI service unavailable",
-      details: error.message || "An unexpected error occurred."
+      code: "INTERNAL_ERROR",
+      message: error.message || "An unexpected error occurred."
     });
   }
 };
