@@ -77,8 +77,8 @@ export const analyzeCompany = async (req, res, next) => {
     if (error.message && error.message.includes('429')) {
       return res.status(429).json({
         success: false,
-        code: "GROQ_RATE_LIMIT",
-        message: "Groq is temporarily rate limiting requests. Please try again in a few minutes."
+        code: "GEMINI_RATE_LIMIT",
+        message: "Gemini is temporarily rate limiting requests. Please try again in a few minutes."
       });
     }
 

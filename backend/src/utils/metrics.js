@@ -2,7 +2,7 @@ export const providerMetrics = {
   Yahoo: { success: 0, fail: 0, timeouts: 0, durations: [] },
   Tavily: { success: 0, fail: 0, timeouts: 0, durations: [] },
   SEC: { success: 0, fail: 0, timeouts: 0, durations: [] },
-  Groq: { success: 0, fail: 0, timeouts: 0, durations: [] },
+  Gemini: { success: 0, fail: 0, timeouts: 0, durations: [] },
   Merge: { success: 0, fail: 0, timeouts: 0, durations: [] },
   Cache: { hits: 0, misses: 0, stored: 0 }
 };

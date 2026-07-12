@@ -1,4 +1,4 @@
-import { executeGroqAnalysis } from '../../services/groqService.js';
+import { executeGeminiAnalysis } from '../../services/geminiService.js';
 import { calculateInvestmentScore } from '../../services/scoringService.js';
 import { logger } from '../../utils/logger.js';
 
@@ -18,8 +18,8 @@ export const analysisNode = async (state) => {
       scoring: deterministicScore
     };
 
-    // 3. Hand off the enriched object exclusively to the Groq service
-    const llmAnalysis = await executeGroqAnalysis(enrichedResearch);
+    // 3. Hand off the enriched object exclusively to the Gemini service
+    const llmAnalysis = await executeGeminiAnalysis(enrichedResearch);
     
     const duration = Date.now() - start;
     logger.info('LangGraph', `[analysisNode] Completed`, duration);

@@ -12,8 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/genai": "^2.11.0",
     "@langchain/core": "^1.2.1",
-    "@langchain/google-genai": "^2.2.0",
     "@langchain/langgraph": "^1.4.7",
     "@tavily/core": "^0.7.6",
     "axios": "^1.18.1",

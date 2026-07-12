@@ -7,7 +7,7 @@ export const CACHE_TTL = {
   YAHOO: 10 * 60 * 1000,
   TAVILY: 15 * 60 * 1000,
   SEC: 24 * 60 * 60 * 1000,
-  GROQ: 10 * 60 * 1000,
+  GEMINI: 10 * 60 * 1000,
   MERGED: 10 * 60 * 1000
 };
 

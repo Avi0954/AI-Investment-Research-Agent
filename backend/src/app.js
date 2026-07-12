@@ -9,7 +9,7 @@ import { requestLogger } from './middleware/logger.js';
 import { logger } from './utils/logger.js';
 
 // Step 7: Environment Validation
-const requiredEnvVars = ['GROQ_API_KEY', 'TAVILY_API_KEY', 'SEC_USER_AGENT', 'REQUEST_TIMEOUT'];
+const requiredEnvVars = ['GOOGLE_API_KEY', 'TAVILY_API_KEY', 'SEC_USER_AGENT', 'REQUEST_TIMEOUT'];
 const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 if (missingVars.length > 0) {
   console.error(`[Startup Error]: Missing required environment variables: ${missingVars.join(', ')}`);
