@@ -13,7 +13,8 @@ const requiredEnvVars = ['GOOGLE_API_KEY', 'TAVILY_API_KEY', 'SEC_USER_AGENT', '
 const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 if (missingVars.length > 0) {
   console.error(`[Startup Error]: Missing required environment variables: ${missingVars.join(', ')}`);
-  process.exit(1);
+  // Removing process.exit(1) so Vercel does not hard crash with 500 FUNCTION_INVOCATION_FAILED.
+  // Instead, the routes will fail gracefully and return a JSON error.
 }
 
 // Process-level exception handling
