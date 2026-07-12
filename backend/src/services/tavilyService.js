@@ -19,11 +19,19 @@ const fetchTavilyNews = async (companyName) => {
     maxResults: 5
   });
 
+  let searchTimeoutId;
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new TimeoutError("Tavily")), timeout);
+    searchTimeoutId = setTimeout(() => reject(new TimeoutError("Tavily")), timeout);
   });
 
-  const response = await Promise.race([searchPromise, timeoutPromise]);
+  let response;
+  try {
+    response = await Promise.race([searchPromise, timeoutPromise]);
+    clearTimeout(searchTimeoutId);
+  } catch (err) {
+    clearTimeout(searchTimeoutId);
+    throw err;
+  }
 
   if (!response || !Array.isArray(response.results)) {
     throw new ProviderError("Invalid response format from Tavily", "Tavily");

@@ -11,9 +11,20 @@ const fetchYahooData = async (companyName) => {
   const timeout = parseInt(process.env.REQUEST_TIMEOUT || '30000', 10);
   
   const searchPromise = yahooFinance.search(companyName);
-  const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new TimeoutError("Yahoo Finance")), timeout));
+  let searchTimeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    searchTimeoutId = setTimeout(() => reject(new TimeoutError("Yahoo Finance")), timeout);
+  });
   
-  const searchRes = await Promise.race([searchPromise, timeoutPromise]);
+  let searchRes;
+  try {
+    searchRes = await Promise.race([searchPromise, timeoutPromise]);
+    clearTimeout(searchTimeoutId);
+  } catch (err) {
+    clearTimeout(searchTimeoutId);
+    throw err;
+  }
+
   const quote = searchRes.quotes.find(q => q.quoteType === 'EQUITY');
   
   if (!quote || !quote.symbol) {
@@ -23,9 +34,20 @@ const fetchYahooData = async (companyName) => {
   const summaryPromise = yahooFinance.quoteSummary(quote.symbol, {
     modules: ['assetProfile', 'summaryDetail', 'defaultKeyStatistics', 'financialData', 'price']
   });
-  const summaryTimeout = new Promise((_, reject) => setTimeout(() => reject(new TimeoutError("Yahoo Finance Quote Summary")), timeout));
   
-  const summary = await Promise.race([summaryPromise, summaryTimeout]);
+  let summaryTimeoutId;
+  const summaryTimeout = new Promise((_, reject) => {
+    summaryTimeoutId = setTimeout(() => reject(new TimeoutError("Yahoo Finance Quote Summary")), timeout);
+  });
+  
+  let summary;
+  try {
+    summary = await Promise.race([summaryPromise, summaryTimeout]);
+    clearTimeout(summaryTimeoutId);
+  } catch (err) {
+    clearTimeout(summaryTimeoutId);
+    throw err;
+  }
   
   return {
     companyName: quote.longname || quote.shortname || companyName,
