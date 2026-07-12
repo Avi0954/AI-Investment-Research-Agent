@@ -20,7 +20,7 @@ export const executeGeminiAnalysis = async (researchData) => {
     try {
       console.log("GEMINI START");
       const response = await withRetry(async () => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`;
         
         const payload = {
           systemInstruction: {
@@ -52,7 +52,7 @@ export const executeGeminiAnalysis = async (researchData) => {
       console.log(JSON.stringify({
         timestamp: new Date().toISOString(),
         endpoint: 'models.generateContent',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         tokens: usage.totalTokenCount || 0,
         statusCode: 200,
         errorMessage: null
@@ -80,7 +80,7 @@ export const executeGeminiAnalysis = async (researchData) => {
       console.error(JSON.stringify({
         timestamp: new Date().toISOString(),
         endpoint: 'models.generateContent',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         tokens: null,
         statusCode: statusCode,
         errorMessage: error.message
