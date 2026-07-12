@@ -9,7 +9,7 @@ const PIPELINE_STEPS = [
   { id: 'news', name: 'Scanning recent news...', duration: 2000 },
   { id: 'sec', name: 'Analyzing SEC filings...', duration: 2500 },
   { id: 'merge', name: 'Normalizing research...', duration: 1000 },
-  { id: 'groq', name: 'Running Groq AI models...', duration: 3500 },
+  { id: 'groq', name: 'Running Gemini AI models...', duration: 3500 },
   { id: 'recommendation', name: 'Synthesizing report...', duration: 1000 }
 ];
 
