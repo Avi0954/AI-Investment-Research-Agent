@@ -205,9 +205,9 @@ The application operates on a sequential, agentic workflow:
 
 Implementing these enhancements would significantly improve the scalability, usability, and overall robustness of the application.
 
-## BONUS – LLM Development Logs
+## LLM Development Logs
 
-This project was developed with the assistance of AI. ChatGPT was utilized throughout the software development lifecycle to accelerate building the application. 
+This project was developed with the assistance of AI. ChatGPT, Google gemini pro 3.1 was utilized throughout the software development lifecycle to accelerate building the application. 
 
 Specifically, the AI assistant helped during:
 - **Project planning:** Scoping the requirements and outlining the necessary steps to build a full-stack AI agent.
